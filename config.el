@@ -209,3 +209,18 @@
 (minuet-set-optional-options minuet-codestral-options :stop ["\n\n"])
 (minuet-set-optional-options minuet-codestral-options :max_tokens 256)
 (add-hook 'prog-mode-hook #'minuet-mode)
+
+;; gptel LLM chat client (Key in ~/.authinfo)
+(use-package! gptel
+ :config
+ (setq! gptel-api-key "gptel-api-key-from-auth-source"))
+
+(setq gptel-model   'mistral-small
+      gptel-backend
+      (gptel-make-openai "MistralLeChat"  ;Any name you want
+        :host "api.mistral.ai"
+        :endpoint "/v1/chat/completions"
+        :protocol "https"
+        :stream t
+        :key "gptel-api-key-from-auth-source"               ;can be a function that returns the key
+        :models '("mistral-small")))
