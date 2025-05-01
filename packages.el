@@ -48,5 +48,14 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
 
+;; lsp-ui
+(package! lsp-ui)
+
+;; lsp-pyright
+(package! lsp-pyright)
+
+;; minuet-ai
+(package! minuet)
+
 ;; gptel: LLM chat client
 (package! gptel :recipe (:nonrecursive t))
