@@ -157,6 +157,20 @@
   :config
   (setq lsp-ruff-enabled t))
 
+;; Prettier configuration
+(use-package! prettier
+  :hook ((typescript-mode . prettier-mode)
+         (rjsx-mode . prettier-mode)
+         (js2-mode . prettier-mode)))
+
+;; Configure Black for Python formatting
+(use-package blacken
+  :hook (python-mode . blacken-mode))
+
+;; Format on save for TypeScript, JavaScript, and Python
+(add-hook 'before-save-hook 'prettier-mode) ;; Apply Prettier on save for JS/TS
+(add-hook 'before-save-hook 'blacken-mode)  ;; Apply Black on save for Python
+
 ;; Minuet LLM code assistant configured for Codestral(TODO: setenv CODESTRAL_API_KEY)
 (use-package minuet
     :bind
