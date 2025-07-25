@@ -54,6 +54,9 @@
 ;; lsp-pyright
 (package! lsp-pyright)
 
+;; black
+(package! blacken)
+
 ;; minuet-ai
 (package! minuet)
 

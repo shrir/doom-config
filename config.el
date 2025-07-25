@@ -44,6 +44,7 @@
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
+(global-display-line-numbers-mode 1)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -93,7 +94,7 @@
   :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 
 ;; Transparency
- (add-to-list 'default-frame-alist '(alpha-background . 96))
+(add-to-list 'default-frame-alist '(alpha-background . 96))
 
 ;; Modeline
 (setq doom-modeline-height 35)
@@ -122,7 +123,12 @@
   (setq-local completion-at-point-functions
               (list #'lsp-completion-at-point)))
 
-(add-hook 'lsp-completion-mode-hook #'my/setup-lsp-completion)
+(add-hook 'lsp-mode-hook
+          (lambda ()
+            (setq-local completion-at-point-functions
+                        (list (cape-super-capf
+                               #'lsp-completion-at-point
+                               #'cape-file)))))
 
 ;;; LSP UI tweaks
 (use-package! lsp-ui
@@ -132,30 +138,17 @@
         lsp-signature-function 'lsp-signature-posframe))
 
 ;;; Start LSP in Python files
-(add-hook 'python-mode-hook #'lsp!)
+(add-hook 'python-mode-hook #'lsp-deferred)
 
 ;;; Set up Pyright for autocompletion (LSP server)
 (use-package lsp-pyright
   :custom (lsp-pyright-langserver-command "pyright") ;; or basedpyright
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp)))  ; or lsp-deferred
   :after lsp-mode
   :config
   ;; Make sure lsp-pyright is the preferred LSP server for Python
   (setq lsp-pyright-auto-import-completions t)  ;; Enable auto-import completions
-  (setq lsp-pyright-disable-language-service t)  ;; Disable Pyright's own language service if using another one like ruff
   (setq lsp-python-ms-executable "pyright")
   )
-
-;;; Set up Ruff for linting (LSP server)
-(use-package lsp-ruff
-  :ensure t
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-ruff)
-                         (lsp-deferred)))  ;; Enable ruff for linting
-  :config
-  (setq lsp-ruff-enabled t))
 
 ;; Prettier configuration
 (use-package! prettier
@@ -173,61 +166,60 @@
 
 ;; Minuet LLM code assistant configured for Codestral(TODO: setenv CODESTRAL_API_KEY)
 (use-package minuet
-    :bind
-    (("M-y" . #'minuet-complete-with-minibuffer) ;; use minibuffer for completion
-     ("M-i" . #'minuet-show-suggestion) ;; use overlay for completion
-     ("C-c m" . #'minuet-configure-provider)
-     :map minuet-active-mode-map
-     ;; These keymaps activate only when a minuet suggestion is displayed in the current buffer
-     ("M-p" . #'minuet-previous-suggestion) ;; invoke completion or cycle to next completion
-     ("M-n" . #'minuet-next-suggestion) ;; invoke completion or cycle to previous completion
-     ("M-A" . #'minuet-accept-suggestion) ;; accept whole completion
-     ;; Accept the first line of completion, or N lines with a numeric-prefix:
-     ;; e.g. C-u 2 M-a will accepts 2 lines of completion.
-     ("M-a" . #'minuet-accept-suggestion-line)
-     ("M-e" . #'minuet-dismiss-suggestion))
+  :bind
+  (("M-y" . #'minuet-complete-with-minibuffer) ;; use minibuffer for completion
+   ("M-i" . #'minuet-show-suggestion) ;; use overlay for completion
+   ("C-c m" . #'minuet-configure-provider)
+   :map minuet-active-mode-map
+   ;; These keymaps activate only when a minuet suggestion is displayed in the current buffer
+   ("M-p" . #'minuet-previous-suggestion) ;; invoke completion or cycle to next completion
+   ("M-n" . #'minuet-next-suggestion) ;; invoke completion or cycle to previous completion
+   ("M-A" . #'minuet-accept-suggestion) ;; accept whole completion
+   ;; Accept the first line of completion, or N lines with a numeric-prefix:
+   ;; e.g. C-u 2 M-a will accepts 2 lines of completion.
+   ("M-a" . #'minuet-accept-suggestion-line)
+   ("M-e" . #'minuet-dismiss-suggestion))
 
-    :init
-    ;; if you want to enable auto suggestion.
-    ;; Note that you can manually invoke completions without enable minuet-auto-suggestion-mode
-    (add-hook 'prog-mode-hook #'minuet-auto-suggestion-mode)
+  :init
+  ;; if you want to enable auto suggestion.
+  ;; Note that you can manually invoke completions without enable minuet-auto-suggestion-mode
+  (add-hook 'prog-mode-hook #'minuet-auto-suggestion-mode)
 
-    :config
-    ;; You can use M-x minuet-configure-provider to interactively configure provider and model
-    (setq minuet-provider 'codestral)
+  :config
+  ;; You can use M-x minuet-configure-provider to interactively configure provider and model
+  (setq minuet-provider 'codestral)
 
-    (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 64))
+  (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 64))
 
-    ;; For Evil users: When defining `minuet-ative-mode-map` in insert
-    ;; or normal states, the following one-liner is required.
+;; For Evil users: When defining `minuet-ative-mode-map` in insert
+;; or normal states, the following one-liner is required.
 
-    ;; (add-hook 'minuet-active-mode-hook #'evil-normalize-keymaps)
+;; (add-hook 'minuet-active-mode-hook #'evil-normalize-keymaps)
 
-    ;; This is *not* necessary when defining `minuet-active-mode-map`.
+;; This is *not* necessary when defining `minuet-active-mode-map`.
 
-    ;; To minimize frequent overhead, it is recommended to avoid adding
-    ;; `evil-normalize-keymaps` to `minuet-active-mode-hook`. Instead,
-    ;; bind keybindings directly within `minuet-active-mode-map` using
-    ;; standard Emacs key sequences, such as `M-xxx`. This approach should
-    ;; not conflict with Evil's keybindings, as Evil primarily avoids
-    ;; using `M-xxx` bindings.
+;; To minimize frequent overhead, it is recommended to avoid adding
+;; `evil-normalize-keymaps` to `minuet-active-mode-hook`. Instead,
+;; bind keybindings directly within `minuet-active-mode-map` using
+;; standard Emacs key sequences, such as `M-xxx`. This approach should
+;; not conflict with Evil's keybindings, as Evil primarily avoids
+;; using `M-xxx` bindings.
 
 (defvar minuet-codestral-options
-    '(:model "codestral-latest"
-      :end-point "https://codestral.mistral.ai/v1/fim/completions"
-      :template (:prompt minuet--default-fim-prompt-function
-                 :suffix minuet--default-fim-suffix-function)
-      :optional nil)
-    "config options for Minuet Codestral provider")
+  '(:model "codestral-latest"
+    :end-point "https://codestral.mistral.ai/v1/fim/completions"
+    :template (:prompt minuet--default-fim-prompt-function
+               :suffix minuet--default-fim-suffix-function)
+    :optional nil)
+  "config options for Minuet Codestral provider")
 
 (minuet-set-optional-options minuet-codestral-options :stop ["\n\n"])
 (minuet-set-optional-options minuet-codestral-options :max_tokens 256)
-(add-hook 'prog-mode-hook #'minuet-mode)
 
 ;; gptel LLM chat client (Key in ~/.authinfo)
 (use-package! gptel
- :config
- (setq! gptel-api-key "gptel-api-key-from-auth-source"))
+  :config
+  (setq! gptel-api-key "gptel-api-key-from-auth-source"))
 
 (setq gptel-model   'mistral-small
       gptel-backend
