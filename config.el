@@ -24,8 +24,6 @@
 (setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
       doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
 
-(mac-auto-operator-composition-mode)
-
 ;; Start Doom fullscreen
 (add-to-list 'default-frame-alist '(width . 92))
 (add-to-list 'default-frame-alist '(height . 40))
