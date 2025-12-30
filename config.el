@@ -207,7 +207,7 @@
 
   (plist-put minuet-openai-compatible-options :end-point "https://openrouter.ai/api/v1/chat/completions")
   (plist-put minuet-openai-compatible-options :api-key "OPENROUTER_API_KEY")
-  (plist-put minuet-openai-compatible-options :model "moonshotai/kimi-k2")
+  (plist-put minuet-openai-compatible-options :model "mistralai/devstral-2512:free")
 
   ;; Prioritize throughput for faster completion
   (minuet-set-optional-options minuet-openai-compatible-options :provider '(:sort "throughput"))
