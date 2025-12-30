@@ -57,8 +57,5 @@
 ;; black
 (package! blacken)
 
-;; minuet-ai
-(package! minuet)
-
 ;; gptel: LLM chat client
 (package! gptel :recipe (:nonrecursive t))

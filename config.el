@@ -149,82 +149,30 @@
   )
 
 ;; Prettier configuration
-(use-package! prettier
-  :hook ((typescript-mode . prettier-mode)
-         (rjsx-mode . prettier-mode)
-         (js2-mode . prettier-mode)))
+;;(use-package! prettier
+;;  :hook ((typescript-mode . prettier-mode)
+;;         (rjsx-mode . prettier-mode)
+;;         (js2-mode . prettier-mode)))
 
 ;; Configure Black for Python formatting
 (use-package blacken
   :hook (python-mode . blacken-mode))
 
 ;; Format on save for TypeScript, JavaScript, and Python
-(add-hook 'before-save-hook 'prettier-mode) ;; Apply Prettier on save for JS/TS
+;;(add-hook 'before-save-hook 'prettier-mode) ;; Apply Prettier on save for JS/TS
 (add-hook 'before-save-hook 'blacken-mode)  ;; Apply Black on save for Python
-
-;; Minuet LLM code assistant configured for Codestral(TODO: setenv CODESTRAL_API_KEY)
-(use-package minuet
-  :bind
-  (("M-y" . #'minuet-complete-with-minibuffer) ;; use minibuffer for completion
-   ("M-i" . #'minuet-show-suggestion) ;; use overlay for completion
-   ("C-c m" . #'minuet-configure-provider)
-   :map minuet-active-mode-map
-   ;; These keymaps activate only when a minuet suggestion is displayed in the current buffer
-   ("M-p" . #'minuet-previous-suggestion) ;; invoke completion or cycle to next completion
-   ("M-n" . #'minuet-next-suggestion) ;; invoke completion or cycle to previous completion
-   ("M-A" . #'minuet-accept-suggestion) ;; accept whole completion
-   ;; Accept the first line of completion, or N lines with a numeric-prefix:
-   ;; e.g. C-u 2 M-a will accepts 2 lines of completion.
-   ("M-a" . #'minuet-accept-suggestion-line)
-   ("M-e" . #'minuet-dismiss-suggestion))
-
-  :init
-  ;; if you want to enable auto suggestion.
-  ;; Note that you can manually invoke completions without enable minuet-auto-suggestion-mode
-  (add-hook 'prog-mode-hook #'minuet-auto-suggestion-mode)
-
-  :config
-  ;; You can use M-x minuet-configure-provider to interactively configure provider and model
-  (setq minuet-provider 'codestral)
-
-  (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 64))
-
-;; For Evil users: When defining `minuet-ative-mode-map` in insert
-;; or normal states, the following one-liner is required.
-
-;; (add-hook 'minuet-active-mode-hook #'evil-normalize-keymaps)
-
-;; This is *not* necessary when defining `minuet-active-mode-map`.
-
-;; To minimize frequent overhead, it is recommended to avoid adding
-;; `evil-normalize-keymaps` to `minuet-active-mode-hook`. Instead,
-;; bind keybindings directly within `minuet-active-mode-map` using
-;; standard Emacs key sequences, such as `M-xxx`. This approach should
-;; not conflict with Evil's keybindings, as Evil primarily avoids
-;; using `M-xxx` bindings.
-
-(defvar minuet-codestral-options
-  '(:model "codestral-latest"
-    :end-point "https://codestral.mistral.ai/v1/fim/completions"
-    :template (:prompt minuet--default-fim-prompt-function
-               :suffix minuet--default-fim-suffix-function)
-    :optional nil)
-  "config options for Minuet Codestral provider")
-
-(minuet-set-optional-options minuet-codestral-options :stop ["\n\n"])
-(minuet-set-optional-options minuet-codestral-options :max_tokens 256)
 
 ;; gptel LLM chat client (Key in ~/.authinfo)
 (use-package! gptel
   :config
   (setq! gptel-api-key "gptel-api-key-from-auth-source"))
 
-(setq gptel-model   'mistral-small
+(setq gptel-model   'mistral-small-latest
       gptel-backend
       (gptel-make-openai "MistralLeChat"  ;Any name you want
         :host "api.mistral.ai"
         :endpoint "/v1/chat/completions"
         :protocol "https"
         :stream t
-        :key "gptel-api-key-from-auth-source"               ;can be a function that returns the key
-        :models '("mistral-small")))
+        :key 'gptel-api-key-from-auth-source
+        :models '("mistral-small-latest"))) ;Default key is 'gptel-api-key-from-auth-source, which means use the key from ~/.authinfo
