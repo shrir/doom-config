@@ -63,3 +63,5 @@
 ;; Aidermacs
 (package! aidermacs)
 
+;; Minuet
+(package! minuet)
