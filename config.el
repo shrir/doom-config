@@ -103,7 +103,7 @@
   (global-corfu-mode)  ;; Make sure it's on everywhere
   :custom
   (corfu-auto t)         ;; Automatically show completions
-  (corfu-auto-delay 0.2) ;; Short delay
+  (corfu-auto-delay 0.1) ;; Short delay
   (corfu-auto-prefix 1)) ;; Start suggesting after 1 char
 
 ;;; Fuzzy matching with Orderless
