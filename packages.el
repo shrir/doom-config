@@ -59,3 +59,7 @@
 
 ;; gptel: LLM chat client
 (package! gptel :recipe (:nonrecursive t))
+
+;; Aidermacs
+(package! aidermacs)
+

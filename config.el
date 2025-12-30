@@ -176,3 +176,23 @@
         :stream t
         :key 'gptel-api-key-from-auth-source
         :models '("mistral-small-latest"))) ;Default key is 'gptel-api-key-from-auth-source, which means use the key from ~/.authinfo
+
+;; Aider config
+(use-package aidermacs
+  :bind (("C-c a" . aidermacs-transient-menu))
+  :config
+
+  ;; Retrieve OpenRouter API key from ~/.authinfo or ~/.authinfo.gpg
+  (defun get-openrouter-api-key ()
+    (let ((found (auth-source-pick-first-password :host "openrouter")))
+      (if found
+          found
+        (error "No OpenRouter API key found in auth-source"))))
+
+  ;; defun get-openrouter-api-key yourself elsewhere for security reasons
+  (setenv "OPENROUTER_API_KEY" (get-openrouter-api-key))
+
+  :custom
+  ;; See the Configuration section below
+  (aidermacs-default-chat-mode 'architect)
+  (aidermacs-default-model "openrouter/mistralai/devstral-2512:free"))
