@@ -162,6 +162,9 @@
 ;;(add-hook 'before-save-hook 'prettier-mode) ;; Apply Prettier on save for JS/TS
 (add-hook 'before-save-hook 'blacken-mode)  ;; Apply Black on save for Python
 
+;; Enable auth source
+(setq auth-sources '("~/.authinfo.gpg" "~/.authinfo"))
+
 ;; gptel LLM chat client (Key in ~/.authinfo)
 (use-package! gptel
   :config
