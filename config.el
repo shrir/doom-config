@@ -163,6 +163,7 @@
 (add-hook 'before-save-hook 'blacken-mode)  ;; Apply Black on save for Python
 
 ;; Enable auth source
+(require 'auth-source)
 (setq auth-sources '("~/.authinfo.gpg" "~/.authinfo"))
 
 ;; gptel LLM chat client (Key in ~/.authinfo)
@@ -170,25 +171,14 @@
   :config
   (setq! gptel-api-key "gptel-api-key-from-auth-source"))
 
-(setq gptel-model   'mistral-small-latest
+(setq gptel-model   'mistral-small
       gptel-backend
       (gptel-make-openai "MistralLeChat"  ;Any name you want
         :host "api.mistral.ai"
         :endpoint "/v1/chat/completions"
         :protocol "https"
-        :stream t
-        :key 'gptel-api-key-from-auth-source
-        :models '("mistral-small-latest"))) ;Default key is 'gptel-api-key-from-auth-source, which means use the key from ~/.authinfo
-
-;; Retrieve OpenRouter API key from ~/.authinfo or ~/.authinfo.gpg
-(defun get-openrouter-api-key ()
-  (let ((found (auth-source-pick-first-password :host "openrouter")))
-    (if found
-        found
-      (error "No OpenRouter API key found in auth-source"))))
-
-;; defun get-openrouter-api-key yourself elsewhere for security reasons
-(setenv "OPENROUTER_API_KEY" (get-openrouter-api-key))
+        :key (auth-source-pick-first-password :host "api.mistral.ai")
+        :models '("mistral-small")))
 
 ;; Aider config
 (use-package aidermacs
@@ -198,21 +188,22 @@
   :custom
   ;; See the Configuration section below
   (aidermacs-default-chat-mode 'architect)
-  (aidermacs-default-model "openrouter/mistralai/devstral-2512:free"))
+  (aidermacs-default-model "moonshotai/kimi-k2"))
 
 ;; Minuet LLM code assistant configured for Codestral(TODO: setenv CODESTRAL_API_KEY)
-(use-package minuet
-  :config
-  (setq minuet-provider 'openai-compatible)
-  (setq minuet-request-timeout 2.5)
-  (setq minuet-auto-suggestion-throttle-delay 1.5) ;; Increase to reduce costs and avoid rate limits
-  (setq minuet-auto-suggestion-debounce-delay 0.6) ;; Increase to reduce costs and avoid rate limits
+(defvar minuet-codestral-options
+  '(:model "codestral-latest"
+    :end-point "https://codestral.mistral.ai/v1/fim/completions"
+    :api-key (auth-source-pick-first-password :host "codestral.mistral.ai")
+    :template (:prompt minuet--default-fim-prompt-function
+               :suffix minuet--default-fim-suffix-function)
+    :optional nil)
+  "config options for Minuet Codestral provider")
 
-  (plist-put minuet-openai-compatible-options :end-point "https://openrouter.ai/api/v1/chat/completions")
-  (plist-put minuet-openai-compatible-options :api-key "OPENROUTER_API_KEY")
-  (plist-put minuet-openai-compatible-options :model "mistralai/devstral-2512:free")
+;; agent-shell config
+(require 'acp)
+(require 'agent-shell)
 
-  ;; Prioritize throughput for faster completion
-  (minuet-set-optional-options minuet-openai-compatible-options :provider '(:sort "throughput"))
-  (minuet-set-optional-options minuet-openai-compatible-options :max_tokens 56)
-  (minuet-set-optional-options minuet-openai-compatible-options :top_p 0.9))
+(setq agent-shell-mistral-authentication
+      (agent-shell-mistral-make-authentication
+       :api-key (auth-source-pick-first-password :host "api.mistral.ai")))

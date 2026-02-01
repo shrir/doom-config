@@ -65,3 +65,8 @@
 
 ;; Minuet
 (package! minuet)
+
+;; Agent-shell https://github.com/xenodium/agent
+(package! shell-maker)
+(package! acp)
+(package! agent-shell)
